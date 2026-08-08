@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Addition Mountain - Flash Card Game</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(180deg, #4A90E2 0%, #87CEEB 40%, #E0F6FF 100%);
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #333;
+  overflow-x: hidden;
+}
+header {
+  width: 100%;
+  max-width: 500px;
+  padding: 12px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
+}
+.game-title { font-size: 1.1rem; font-weight: bold; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+.level-name { font-size: 0.85rem; color: white; text-align: center; margin-top: 2px; }
+.score-badge {
+  background: rgba(255,255,255,0.25);
+  padding: 4px 12px;
+  border-radius: 12px;
+  color: white;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+.icon-btn {
+  background: rgba(255,255,255,0.25);
+  border: none;
+  color: white;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+}
+.mountain-container {
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+  margin: 5px 0 10px;
+}
+.mountain-svg { width: 100%; height: auto; display: block; }
+.climber {
+  position: absolute;
+  width: 28px; height: 28px;
+  background: #FF6B6B;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: top 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+}
+.climber::after { content: '🧗'; font-size: 16px; }
+.card-container {
+  width: 90%;
+  max-width: 380px;
+  margin: 5px 0 15px;
+}
+.flashcard {
+  background: white;
+  border-radius: 20px;
+  padding: 25px 20px 30px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  position: relative;
+  overflow: hidden;
+}
+.flashcard.correct { animation: correctFlash 0.5s ease; }
+.flashcard.wrong { animation: wrongShake 0.5s ease; }
+@keyframes correctFlash {
+  0% { background: white; transform: scale(1); }
+  50% { background: #C8E6C9; transform: scale(1.02); }
+  100% { background: white; transform: scale(1); }
+}
+@keyframes wrongShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+}
+.equation {
+  font-size: 2.8rem;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+}
+.answer-display {
+  font-size: 2.2rem;
+  font-weight: bold;
+  color: #4A90E2;
+  min-height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 3px solid #e0e0e0;
+  margin-bottom: 8px;
+  transition: color 0.3s;
+}
+.feedback {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.5);
+  font-size: 2.5rem;
+  font-weight: bold;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+.feedback.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.feedback.correct { color: #2E7D32; }
+.feedback.wrong { color: #C62828; }
+.progress-container {
+  width: 90%;
+  max-width: 380px;
+  margin: 10px 0;
+}
+.progress-label {
+  text-align: center;
+  color: white;
+  font-weight: bold;
+  margin-bottom: 8px;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+  font-size: 0.9rem;
+}
+.progress-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.dot {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  border: 2px solid rgba(255,255,255,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+.dot.done { background: #4CAF50; border-color: #2E7D32; transform: scale(1.1); }
+.dot.current { background: #FFC107; border-color: #FF8F00; animation: pulse 1.5s infinite; }
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(255, 193, 7, 0); }
+}
+.keypad {
+  width: 90%;
+  max-width: 300px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 10px 0 20px;
+}
+.key {
+  background: white;
+  border: none;
+  border-radius: 14px;
+  padding: 18px;
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: all 0.1s;
+  user-select: none;
+}
+.key:active { transform: scale(0.92); background: #f0f0f0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.key.submit { background: #4CAF50; color: white; }
+.key.submit:active { background: #43A047; }
+.key.backspace { background: #FF9800; color: white; }
+.key.backspace:active { background: #FB8C00; }
+footer {
+  width: 100%;
+  max-width: 500px;
+  padding: 10px 15px 25px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: auto;
+}
+.footer-btn {
+  background: rgba(255,255,255,0.25);
+  border: none;
+  color: white;
+  padding: 10px 22px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: bold;
+  backdrop-filter: blur(8px);
+  transition: background 0.2s;
+}
+.footer-btn:hover { background: rgba(255,255,255,0.4); }
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(3px);
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: white;
+  border-radius: 20px;
+  padding: 25px;
+  max-width: 450px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.modal h2 { margin-bottom: 20px; text-align: center; color: #2c3e50; }
+.level-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+.level-item.locked { opacity: 0.5; }
+.level-item.current { border: 2px solid #4A90E2; background: #e3f2fd; }
+.level-item:not(.locked):hover { transform: translateX(5px); background: #e8f5e9; cursor: pointer; }
+.level-num {
+  width: 42px; height: 42px;
+  background: #4A90E2;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 15px;
+  flex-shrink: 0;
+  font-size: 1.1rem;
+}
+.level-item.locked .level-num { background: #bdbdbd; }
+.level-info { flex: 1; }
+.level-title { font-weight: bold; color: #333; }
+.level-range { font-size: 0.8rem; color: #666; }
+.level-stars { font-size: 1.3rem; letter-spacing: 2px; }
+.modal-close {
+  width: 100%;
+  padding: 12px;
+  background: #4A90E2;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  margin-top: 10px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.modal-close:hover { background: #357ABD; }
+.level-complete {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+  backdrop-filter: blur(3px);
+}
+.level-complete.show { display: flex; }
+.complete-content {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  max-width: 350px;
+  width: 100%;
+  animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+@keyframes popIn {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.complete-title { font-size: 1.8rem; margin-bottom: 10px; color: #2c3e50; }
+.complete-stars { font-size: 2.8rem; margin: 15px 0; letter-spacing: 5px; }
+.complete-msg { font-size: 1.1rem; color: #666; margin-bottom: 20px; }
+.complete-btn {
+  padding: 12px 30px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 5px;
+  transition: background 0.2s;
+}
+.complete-btn:hover { background: #43A047; }
+.complete-btn.secondary { background: #FF9800; }
+.complete-btn.secondary:hover { background: #FB8C00; }
+.confetti {
+  position: fixed;
+  width: 10px; height: 10px;
+  top: -10px;
+  animation: fall linear forwards;
+  z-index: 3000;
+  border-radius: 2px;
+}
+@keyframes fall {
+  to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+@media (max-width: 360px) {
+  .equation { font-size: 2.2rem; }
+  .key { padding: 14px; font-size: 1.3rem; }
+  .dot { width: 26px; height: 26px; font-size: 0.7rem; }
+}
+</style>
+</head>
+<body>
+  <header>
+    <button class="icon-btn" id="homeBtn" title="Restart Level">🏠</button>
+    <div style="text-align:center;flex:1;">
+      <div class="game-title">Addition Mountain</div>
+      <div class="level-name" id="levelName">Bukit Pemula</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div class="score-badge" id="scoreBadge">0/10</div>
+      <button class="icon-btn" id="levelsBtn" title="Level Map">🗺️</button>
+    </div>
+  </header>
+
+  <div class="mountain-container" id="mountainContainer">
+    <svg class="mountain-svg" viewBox="0 0 400 500" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <linearGradient id="mountainGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#9E9E9E;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#607D8B;stop-opacity:1" />
+        </linearGradient>
+        <linearGradient id="snowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#E8E8E8;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <!-- Background clouds -->
+      <ellipse cx="80" cy="60" rx="40" ry="15" fill="rgba(255,255,255,0.6)" />
+      <ellipse cx="320" cy="90" rx="35" ry="12" fill="rgba(255,255,255,0.5)" />
+      <!-- Mountain body -->
+      <path d="M 0 500 L 200 80 L 400 500 Z" fill="url(#mountainGrad)" />
+      <!-- Snow cap -->
+      <path d="M 200 80 L 180 140 L 200 120 L 220 140 Z" fill="url(#snowGrad)" />
+      <!-- Ridge lines -->
+      <path d="M 200 80 L 160 180" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none" />
+      <path d="M 200 80 L 240 180" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none" />
+      <!-- Base camp -->
+      <rect x="155" y="465" width="90" height="35" fill="#5D4037" rx="4" />
+      <text x="200" y="487" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="sans-serif">BASE CAMP</text>
+      <!-- Trees -->
+      <polygon points="50,500 60,460 70,500" fill="#2E7D32" />
+      <polygon points="330,500 340,470 350,500" fill="#2E7D32" />
+      <polygon points="310,500 320,475 330,500" fill="#388E3C" />
+      <!-- Summit flag -->
+      <line x1="200" y1="80" x2="200" y2="55" stroke="#333" stroke-width="2" />
+      <polygon points="200,55 215,62 200,69" fill="#F44336" />
+    </svg>
+    <div class="climber" id="climber" style="top: 88%;"></div>
+  </div>
+
+  <div class="card-container">
+    <div class="flashcard" id="flashcard">
+      <div class="equation" id="equation">5 + 3 = ?</div>
+      <div class="answer-display" id="answerDisplay">?</div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+  </div>
+
+  <div class="progress-container">
+    <div class="progress-label" id="progressLabel">Progress: 0 / 10</div>
+    <div class="progress-dots" id="progressDots"></div>
+  </div>
+
+  <div class="keypad">
+    <button class="key" data-num="1">1</button>
+    <button class="key" data-num="2">2</button>
+    <button class="key" data-num="3">3</button>
+    <button class="key" data-num="4">4</button>
+    <button class="key" data-num="5">5</button>
+    <button class="key" data-num="6">6</button>
+    <button class="key" data-num="7">7</button>
+    <button class="key" data-num="8">8</button>
+    <button class="key" data-num="9">9</button>
+    <button class="key backspace" id="backspaceBtn">⌫</button>
+    <button class="key" data-num="0">0</button>
+    <button class="key submit" id="submitBtn">✓</button>
+  </div>
+
+  <footer>
+    <button class="footer-btn" id="resetBtn">🔄 Reset Progress</button>
+  </footer>
+
+  <!-- Level Map Modal -->
+  <div class="modal-overlay" id="levelsModal">
+    <div class="modal">
+      <h2>🗺️ Peta Gunung</h2>
+      <div id="levelsList"></div>
+      <button class="modal-close" id="closeModal">Tutup</button>
+    </div>
+  </div>
+
+  <!-- Level Complete Modal -->
+  <div class="level-complete" id="levelComplete">
+    <div class="complete-content">
+      <div class="complete-title" id="completeTitle">Level Complete!</div>
+      <div class="complete-stars" id="completeStars">⭐⭐⭐</div>
+      <div class="complete-msg" id="completeMsg">Amazing!</div>
+      <div>
+        <button class="complete-btn" id="nextLevelBtn">Next Level →</button>
+        <button class="complete-btn secondary" id="replayBtn">🔄 Replay</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const LEVELS = [
+  { name: 'Bukit Pemula', range: [0, 5], desc: '0+0 sampai 5+5' },
+  { name: 'Tanah Tinggi', range: [0, 9], desc: '0+0 sampai 9+9' },
+  { name: 'Puncak Sepuluh', range: [10, 10], desc: '10+0 sampai 10+10', fixed: true },
+  { name: 'Bukit Menengah', range: [0, 20], desc: '0+0 sampai 20+20' },
+  { name: 'Lereng Lima Puluh', range: [10, 50], desc: '10+10 sampai 50+50' },
+  { name: 'Bukit Seratus', range: [0, 50], desc: '0+0 sampai 50+50' },
+  { name: 'Pegunungan Dua Ratus', range: [0, 100], desc: '0+0 sampai 100+100' },
+  { name: 'Puncak Lima Ratus', range: [100, 500], desc: '100+100 sampai 500+500' },
+  { name: 'Bukit Seribu', range: [0, 500], desc: '0+0 sampai 500+500' },
+  { name: 'Puncak Seribu', range: [0, 1000], desc: '0+0 sampai 1000+1000' },
+  { name: 'Tangga Sepuluh', range: [10, 90], desc: 'Kelipatan 10', multiple: 10 },
+  { name: 'Tangga Seratus', range: [100, 900], desc: 'Kelipatan 100', multiple: 100 },
+  { name: 'Tangga Seribu', range: [1000, 9000], desc: 'Kelipatan 1000', multiple: 1000 },
+  { name: 'Puncak Bulat', range: [300, 800], desc: 'Ratusan mendekati bulat', nearRound: true },
+  { name: 'Maha Puncak', range: [0, 1000], desc: 'Tantangan campuran 0-2000' }
+];
+
+const QUESTIONS_PER_LEVEL = 10;
+const STORAGE_KEY = 'additionMountainData';
+
+let state = {
+  currentLevel: 1,
+  currentScore: 0,
+  currentWrongs: 0,
+  levelStars: {},
+  currentAnswer: null,
+  userAnswer: '',
+  busy: false
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const data = JSON.parse(saved);
+      state.currentLevel = data.currentLevel || 1;
+      state.levelStars = data.levelStars || {};
+      state.currentScore = data.currentScore || 0;
+      state.currentWrongs = data.currentWrongs || 0;
+      if (state.currentScore >= QUESTIONS_PER_LEVEL) {
+        state.currentLevel = Math.min(state.currentLevel + 1, LEVELS.length);
+        state.currentScore = 0;
+        state.currentWrongs = 0;
+      }
+    }
+  } catch (e) { console.error('Load failed', e); }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      currentLevel: state.currentLevel,
+      levelStars: state.levelStars,
+      currentScore: state.currentScore,
+      currentWrongs: state.currentWrongs
+    }));
+  } catch (e) { console.error('Save failed', e); }
+}
+
+function generateQuestion(levelIndex) {
+  const level = LEVELS[levelIndex];
+  let a, b;
+  
+  if (level.fixed) {
+    b = Math.floor(Math.random() * 11);
+    a = 10;
+  } else if (level.multiple) {
+    const minVal = Math.floor(level.range[0] / level.multiple);
+    const maxVal = Math.floor(level.range[1] / level.multiple);
+    a = (Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal) * level.multiple;
+    b = (Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal) * level.multiple;
+  } else if (level.nearRound) {
+    const bases = [300, 400, 500, 600, 700, 800];
+    const comps = [100, 200, 300, 400, 500, 600, 700];
+    a = bases[Math.floor(Math.random() * bases.length)];
+    b = comps[Math.floor(Math.random() * comps.length)];
+  } else {
+    a = Math.floor(Math.random() * (level.range[1] - level.range[0] + 1)) + level.range[0];
+    b = Math.floor(Math.random() * (level.range[1] - level.range[0] + 1)) + level.range[0];
+  }
+  
+  return { a, b, answer: a + b };
+}
+
+function updateUI() {
+  const level = LEVELS[state.currentLevel - 1];
+  document.getElementById('levelName').textContent = state.currentLevel + '. ' + level.name;
+  document.getElementById('scoreBadge').textContent = state.currentScore + '/' + QUESTIONS_PER_LEVEL;
+  
+  const dotsContainer = document.getElementById('progressDots');
+  dotsContainer.innerHTML = '';
+  for (let i = 0; i < QUESTIONS_PER_LEVEL; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'dot';
+    if (i < state.currentScore) dot.classList.add('done');
+    if (i === state.currentScore) dot.classList.add('current');
+    dot.textContent = i < state.currentScore ? '✓' : (i + 1);
+    dotsContainer.appendChild(dot);
+  }
+  
+  document.getElementById('progressLabel').textContent = 'Progress: ' + state.currentScore + ' / ' + QUESTIONS_PER_LEVEL;
+  
+  const progress = state.currentScore / QUESTIONS_PER_LEVEL;
+  const topPos = 88 - (progress * 76);
+  document.getElementById('climber').style.top = topPos + '%';
+  
+  updateFlashcard();
+}
+
+function updateFlashcard() {
+  const q = generateQuestion(state.currentLevel - 1);
+  state.currentAnswer = q.answer;
+  state.userAnswer = '';
+  state.busy = false;
+  document.getElementById('equation').textContent = q.a + ' + ' + q.b + ' = ?';
+  document.getElementById('answerDisplay').textContent = '?';
+  document.getElementById('answerDisplay').style.color = '#4A90E2';
+}
+
+function showFeedback(type, message) {
+  const feedback = document.getElementById('feedback');
+  feedback.textContent = message;
+  feedback.className = 'feedback show ' + type;
+  setTimeout(() => { feedback.className = 'feedback'; }, 1000);
+}
+
+function calculateStars(wrongs) {
+  if (wrongs === 0) return 3;
+  if (wrongs <= 3) return 2;
+  return 1;
+}
+
+function renderStars(stars) {
+  return '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+}
+
+function levelComplete() {
+  const stars = calculateStars(state.currentWrongs);
+  state.levelStars[state.currentLevel] = Math.max(stars, state.levelStars[state.currentLevel] || 0);
+  saveState();
+  
+  const isLast = state.currentLevel >= LEVELS.length;
+  document.getElementById('completeTitle').textContent = isLast ? '🏆 Maha Puncak!' : 'Level Complete! 🎉';
+  document.getElementById('completeStars').textContent = renderStars(stars);
+  
+  const messages = ['Perfect! No mistakes! 🎊', 'Great job! 🌟', 'Good effort! Keep climbing! 💪'];
+  document.getElementById('completeMsg').textContent = messages[3 - stars];
+  
+  document.getElementById('nextLevelBtn').textContent = isLast ? '🔄 Main Lagi' : 'Next Level →';
+  document.getElementById('levelComplete').classList.add('show');
+  createConfetti();
+}
+
+function nextLevel() {
+  document.getElementById('levelComplete').classList.remove('show');
+  if (state.currentLevel >= LEVELS.length) {
+    state.currentLevel = 1;
+  } else {
+    state.currentLevel++;
+  }
+  state.currentScore = 0;
+  state.currentWrongs = 0;
+  state.userAnswer = '';
+  saveState();
+  updateUI();
+}
+
+function replayLevel() {
+  document.getElementById('levelComplete').classList.remove('show');
+  state.currentScore = 0;
+  state.currentWrongs = 0;
+  state.userAnswer = '';
+  saveState();
+  updateUI();
+}
+
+function createConfetti() {
+  const colors = ['#FFD700', '#FF6B6B', '#4CAF50', '#2196F3', '#9C27B0', '#FF9800'];
+  for (let i = 0; i < 40; i++) {
+    setTimeout(() => {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = Math.random() * 100 + 'vw';
+      c.style.background = colors[Math.floor(Math.random() * colors.length)];
+      c.style.width = (Math.random() * 8 + 6) + 'px';
+      c.style.height = (Math.random() * 8 + 6) + 'px';
+      c.style.animationDuration = (Math.random() * 2 + 2.5) + 's';
+      c.style.animationDelay = '0s';
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 5000);
+    }, i * 40);
+  }
+}
+
+function handleNumber(num) {
+  if (state.busy) return;
+  if (state.userAnswer.length >= 6) return;
+  state.userAnswer += num;
+  document.getElementById('answerDisplay').textContent = state.userAnswer;
+}
+
+function handleBackspace() {
+  if (state.busy) return;
+  state.userAnswer = state.userAnswer.slice(0, -1);
+  document.getElementById('answerDisplay').textContent = state.userAnswer || '?';
+}
+
+function handleSubmit() {
+  if (state.busy || !state.userAnswer) return;
+  
+  const userVal = parseInt(state.userAnswer, 10);
+  state.busy = true;
+  const flashcard = document.getElementById('flashcard');
+  
+  if (userVal === state.currentAnswer) {
+    flashcard.classList.add('correct');
+    showFeedback('correct', '✓ Benar!');
+    state.currentScore++;
+    saveState();
+    
+    setTimeout(() => {
+      flashcard.classList.remove('correct');
+      if (state.currentScore >= QUESTIONS_PER_LEVEL) {
+        levelComplete();
+      } else {
+        updateUI();
+      }
+    }, 600);
+  } else {
+    flashcard.classList.add('wrong');
+    showFeedback('wrong', '✗ ' + state.currentAnswer);
+    state.currentWrongs++;
+    saveState();
+    
+    setTimeout(() => {
+      flashcard.classList.remove('wrong');
+      state.userAnswer = '';
+      document.getElementById('answerDisplay').textContent = '?';
+      document.getElementById('answerDisplay').style.color = '#4A90E2';
+      updateFlashcard();
+    }, 1200);
+  }
+}
+
+function resetProgress() {
+  if (confirm('Reset all progress? This cannot be undone.')) {
+    localStorage.removeItem(STORAGE_KEY);
+    state.currentLevel = 1;
+    state.currentScore = 0;
+    state.currentWrongs = 0;
+    state.levelStars = {};
+    state.userAnswer = '';
+    state.busy = false;
+    updateUI();
+  }
+}
+
+function showLevelsModal() {
+  const modal = document.getElementById('levelsModal');
+  const list = document.getElementById('levelsList');
+  list.innerHTML = '';
+  
+  LEVELS.forEach((level, index) => {
+    const levelNum = index + 1;
+    const isUnlocked = levelNum <= state.currentLevel || state.levelStars[levelNum];
+    const isCurrent = levelNum === state.currentLevel;
+    const stars = state.levelStars[levelNum] || 0;
+    
+    const item = document.createElement('div');
+    item.className = 'level-item';
+    if (!isUnlocked) item.classList.add('locked');
+    if (isCurrent) item.classList.add('current');
+    
+    item.innerHTML = `
+      <div class="level-num">${levelNum}</div>
+      <div class="level-info">
+        <div class="level-title">${level.name}</div>
+        <div class="level-range">${level.desc}</div>
+      </div>
+      <div class="level-stars">${isUnlocked ? renderStars(stars) : '🔒'}</div>
+    `;
+    
+    if (isUnlocked) {
+      item.addEventListener('click', () => {
+        state.currentLevel = levelNum;
+        state.currentScore = 0;
+        state.currentWrongs = 0;
+        state.userAnswer = '';
+        state.busy = false;
+        saveState();
+        updateUI();
+        modal.classList.remove('show');
+      });
+    }
+    
+    list.appendChild(item);
+  });
+  
+  modal.classList.add('show');
+}
+
+// Event Listeners
+document.querySelectorAll('.key[data-num]').forEach(btn => {
+  btn.addEventListener('click', () => handleNumber(btn.dataset.num));
+});
+document.getElementById('backspaceBtn').addEventListener('click', handleBackspace);
+document.getElementById('submitBtn').addEventListener('click', handleSubmit);
+document.getElementById('resetBtn').addEventListener('click', resetProgress);
+document.getElementById('levelsBtn').addEventListener('click', showLevelsModal);
+document.getElementById('closeModal').addEventListener('click', () => {
+  document.getElementById('levelsModal').classList.remove('show');
+});
+document.getElementById('homeBtn').addEventListener('click', () => {
+  state.currentScore = 0;
+  state.currentWrongs = 0;
+  state.userAnswer = '';
+  state.busy = false;
+  saveState();
+  updateUI();
+  document.getElementById('levelsModal').classList.remove('show');
+});
+document.getElementById('nextLevelBtn').addEventListener('click', nextLevel);
+document.getElementById('replayBtn').addEventListener('click', replayLevel);
+
+document.getElementById('levelsModal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('levelsModal')) {
+    document.getElementById('levelsModal').classList.remove('show');
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key >= '0' && e.key <= '9') handleNumber(e.key);
+  else if (e.key === 'Backspace') handleBackspace();
+  else if (e.key === 'Enter') handleSubmit();
+});
+
+loadState();
+updateUI();
+</script>
+</body>
+</html>
