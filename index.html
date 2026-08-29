@@ -439,9 +439,20 @@ footer {
   cursor: pointer;
 }
 
-.level-item.locked { opacity: 0.5; cursor: not-allowed; }
-.level-item.current { border: 2px solid var(--primary); background: #e3f2fd; }
-.level-item:not(.locked):hover { transform: translateX(4px); background: #e8f5e9; }
+  .level-item.locked { opacity: 0.5; cursor: not-allowed; }
+  .level-item.current { border: 2px solid var(--primary); background: #e3f2fd; }
+  .level-item:not(.locked):hover { transform: translateX(4px); background: #e8f5e9; }
+
+  .theme-header {
+    padding: 10px 14px;
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 0.85rem;
+    margin: 14px 0 6px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .theme-header:first-child { margin-top: 4px; }
 
 .level-num {
   width: 44px; height: 44px;
@@ -1290,7 +1301,7 @@ function showLevelsModal() {
     const levels = grouped[themeKey] || [];
 
     const themeHeader = document.createElement('div');
-    themeHeader.style.cssText = 'padding: 8px 12px; font-weight: 700; color: var(--primary); font-size: 0.9rem; margin-top: 8px;';
+    themeHeader.className = 'theme-header';
     themeHeader.textContent = theme.name;
     list.appendChild(themeHeader);
 
