@@ -2,293 +2,483 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Addition Mountain - Flash Card Game</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Addition Adventure - Math Flash Card Game</title>
 <style>
+:root {
+  --primary: #4A90E2;
+  --primary-dark: #357ABD;
+  --success: #4CAF50;
+  --warning: #FFC107;
+  --danger: #FF9800;
+  --text: #2c3e50;
+  --bg-top: #4A90E2;
+  --bg-mid: #87CEEB;
+  --bg-bottom: #E0F6FF;
+  --card-bg: #ffffff;
+  --glass-bg: rgba(255,255,255,0.15);
+  --glass-border: rgba(255,255,255,0.2);
+}
+
+.theme-ocean {
+  --primary: #00BCD4;
+  --primary-dark: #0097A7;
+  --bg-top: #006064;
+  --bg-mid: #00838F;
+  --bg-bottom: #B2EBF2;
+  --card-bg: #ffffff;
+  --glass-bg: rgba(255,255,255,0.18);
+  --glass-border: rgba(255,255,255,0.25);
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+html, body { height: 100%; overflow: hidden; }
+
 body {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: linear-gradient(180deg, #4A90E2 0%, #87CEEB 40%, #E0F6FF 100%);
-  min-height: 100vh;
-  min-height: 100dvh;
+  background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 40%, var(--bg-bottom) 100%);
+  color: var(--text);
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: #333;
-  overflow-x: hidden;
+  overscroll-behavior: none;
+  transition: background 0.6s ease;
 }
+
 header {
   width: 100%;
-  max-width: 500px;
-  padding: 12px 15px;
+  max-width: 520px;
+  padding: 10px 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(8px);
-}
-.game-title { font-size: 1.1rem; font-weight: bold; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
-.level-name { font-size: 0.85rem; color: white; text-align: center; margin-top: 2px; }
-.score-badge {
   background: rgba(255,255,255,0.25);
-  padding: 4px 12px;
-  border-radius: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.3);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 9999;
+  pointer-events: auto;
+}
+
+.game-title {
+  font-size: 1.1rem;
+  font-weight: 800;
   color: white;
-  font-weight: bold;
-  font-size: 0.9rem;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+  letter-spacing: 0.3px;
 }
+
+.level-name {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.9);
+  text-align: center;
+  margin-top: 1px;
+  font-weight: 500;
+}
+
+.score-badge {
+  background: var(--glass-bg);
+  padding: 4px 12px;
+  border-radius: 14px;
+  color: white;
+  font-weight: 700;
+  font-size: 0.85rem;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border);
+  transition: all 0.3s;
+}
+
 .icon-btn {
-  background: rgba(255,255,255,0.25);
-  border: none;
+  background: rgba(255,255,255,0.3);
+  border: 1px solid rgba(255,255,255,0.4);
   color: white;
   width: 38px; height: 38px;
   border-radius: 50%;
   cursor: pointer;
   font-size: 1.2rem;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(8px);
+  transition: transform 0.15s, background 0.2s;
+  position: relative;
+  z-index: 10000;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
-.mountain-container {
+
+.icon-btn:active { transform: scale(0.92); background: rgba(255,255,255,0.35); }
+
+.scene-container {
   width: 100%;
   max-width: 400px;
   position: relative;
-  margin: 5px 0 10px;
+  margin: 4px 0 6px;
+  flex-shrink: 0;
+  transition: all 0.6s ease;
 }
-.mountain-svg { width: 100%; height: auto; display: block; }
-.climber {
+
+.scene-svg { width: 100%; height: auto; display: block; }
+
+.character {
   position: absolute;
-  width: 28px; height: 28px;
-  background: #FF6B6B;
+  width: 36px; height: 36px;
   border-radius: 50%;
   border: 3px solid white;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+  will-change: top, left, bottom;
+}
+
+.character-mountain {
+  background: #FF6B6B;
+  top: 88%;
   left: 50%;
   transform: translateX(-50%);
+}
+
+.character-ocean {
+  background: #00BCD4;
+  bottom: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px; height: 40px;
+}
+
+.character::after {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.main-area {
+  flex: 1;
+  width: 100%;
+  max-width: 500px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: top 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 10;
+  padding: 0 10px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transition: all 0.3s ease;
 }
-.climber::after { content: '🧗'; font-size: 16px; }
+
 .card-container {
-  width: 90%;
+  width: 92%;
   max-width: 380px;
-  margin: 5px 0 15px;
+  margin: 6px 0 12px;
 }
+
 .flashcard {
-  background: white;
-  border-radius: 20px;
-  padding: 25px 20px 30px;
+  background: var(--card-bg);
+  border-radius: 22px;
+  padding: 22px 18px 26px;
   text-align: center;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
   position: relative;
   overflow: hidden;
+  transition: background 0.6s ease, transform 0.3s;
 }
+
 .flashcard.correct { animation: correctFlash 0.5s ease; }
 .flashcard.wrong { animation: wrongShake 0.5s ease; }
+
 @keyframes correctFlash {
   0% { background: white; transform: scale(1); }
-  50% { background: #C8E6C9; transform: scale(1.02); }
+  50% { background: #C8E6C9; transform: scale(1.03); }
   100% { background: white; transform: scale(1); }
 }
+
 @keyframes wrongShake {
   0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-8px); }
-  40% { transform: translateX(8px); }
-  60% { transform: translateX(-6px); }
-  80% { transform: translateX(6px); }
+  15% { transform: translateX(-10px); }
+  30% { transform: translateX(10px); }
+  45% { transform: translateX(-8px); }
+  60% { transform: translateX(8px); }
+  75% { transform: translateX(-4px); }
+  90% { transform: translateX(4px); }
 }
+
 .equation {
-  font-size: 2.8rem;
-  font-weight: bold;
-  color: #2c3e50;
-  margin-bottom: 15px;
-  font-family: 'Courier New', monospace;
-  letter-spacing: 2px;
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 14px;
+  font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+  letter-spacing: 1.5px;
 }
+
 .answer-display {
   font-size: 2.2rem;
-  font-weight: bold;
-  color: #4A90E2;
-  min-height: 55px;
+  font-weight: 700;
+  color: var(--primary);
+  min-height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 3px solid #e0e0e0;
+  border-bottom: 3px solid #e8e8e8;
   margin-bottom: 8px;
-  transition: color 0.3s;
+  transition: color 0.3s, transform 0.2s;
 }
+
+.answer-display.pulse { animation: answerPulse 0.3s ease; }
+@keyframes answerPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
 .feedback {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(0.5);
-  font-size: 2.5rem;
-  font-weight: bold;
+  transform: translate(-50%, -50%) scale(0.4);
+  font-size: 2.8rem;
+  font-weight: 800;
   opacity: 0;
   pointer-events: none;
-  transition: all 0.3s ease;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+  transition: all 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.15);
+  z-index: 20;
 }
+
 .feedback.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 .feedback.correct { color: #2E7D32; }
 .feedback.wrong { color: #C62828; }
+
 .progress-container {
-  width: 90%;
+  width: 92%;
   max-width: 380px;
-  margin: 10px 0;
+  margin: 4px 0 10px;
 }
+
 .progress-label {
   text-align: center;
   color: white;
-  font-weight: bold;
+  font-weight: 700;
   margin-bottom: 8px;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-  font-size: 0.9rem;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.25);
+  font-size: 0.85rem;
+  letter-spacing: 0.3px;
+  transition: all 0.3s;
 }
+
 .progress-dots {
   display: flex;
   justify-content: center;
   gap: 8px;
   flex-wrap: wrap;
 }
+
 .dot {
-  width: 30px; height: 30px;
+  width: 32px; height: 32px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.35);
-  border: 2px solid rgba(255,255,255,0.8);
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: white;
-  font-weight: bold;
-  transition: all 0.3s;
+  font-weight: 700;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
-.dot.done { background: #4CAF50; border-color: #2E7D32; transform: scale(1.1); }
-.dot.current { background: #FFC107; border-color: #FF8F00; animation: pulse 1.5s infinite; }
+
+.dot.done {
+  background: var(--success);
+  border-color: #2E7D32;
+  transform: scale(1.1);
+  box-shadow: 0 3px 8px rgba(76, 175, 80, 0.4);
+}
+
+.dot.current {
+  background: var(--warning);
+  border-color: #FF8F00;
+  animation: pulse 1.5s infinite;
+  box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.2);
+}
+
 @keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(255, 193, 7, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.5); }
+  50% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
 }
+
 .keypad {
-  width: 90%;
+  width: 92%;
   max-width: 300px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  margin: 10px 0 20px;
+  margin: 6px 0 16px;
 }
+
 .key {
   background: white;
   border: none;
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 18px;
   font-size: 1.6rem;
-  font-weight: bold;
-  color: #333;
+  font-weight: 700;
+  color: var(--text);
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  transition: all 0.1s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: all 0.12s;
   user-select: none;
+  -webkit-user-select: none;
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.key:active { transform: scale(0.92); background: #f0f0f0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-.key.submit { background: #4CAF50; color: white; }
+
+.key:active { transform: scale(0.9); background: #f5f5f5; box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
+
+.key.submit { background: var(--success); color: white; }
 .key.submit:active { background: #43A047; }
-.key.backspace { background: #FF9800; color: white; }
+
+.key.backspace { background: var(--danger); color: white; }
 .key.backspace:active { background: #FB8C00; }
+
 footer {
   width: 100%;
-  max-width: 500px;
-  padding: 10px 15px 25px;
+  max-width: 520px;
+  padding: 8px 14px 20px;
   display: flex;
   justify-content: center;
-  gap: 15px;
+  gap: 12px;
   margin-top: auto;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 9999;
+  pointer-events: auto;
 }
+
 .footer-btn {
-  background: rgba(255,255,255,0.25);
-  border: none;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   color: white;
-  padding: 10px 22px;
-  border-radius: 20px;
+  padding: 10px 20px;
+  border-radius: 22px;
   cursor: pointer;
   font-size: 0.9rem;
-  font-weight: bold;
-  backdrop-filter: blur(8px);
-  transition: background 0.2s;
+  font-weight: 600;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: auto;
+  position: relative;
+  z-index: 10000;
 }
-.footer-btn:hover { background: rgba(255,255,255,0.4); }
+
+.footer-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.35); }
+
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.55);
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 10000;
   padding: 20px;
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: fadeIn 0.25s ease;
 }
+
 .modal-overlay.show { display: flex; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
 .modal {
   background: white;
-  border-radius: 20px;
-  padding: 25px;
-  max-width: 450px;
+  border-radius: 22px;
+  padding: 24px;
+  max-width: 440px;
   width: 100%;
-  max-height: 80vh;
+  max-height: 78vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+  animation: slideUp 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
-.modal h2 { margin-bottom: 20px; text-align: center; color: #2c3e50; }
+
+@keyframes slideUp {
+  from { transform: translateY(60px) scale(0.95); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.modal h2 {
+  margin-bottom: 18px;
+  text-align: center;
+  color: var(--text);
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
 .level-item {
   display: flex;
   align-items: center;
   padding: 12px;
   margin-bottom: 8px;
   background: #f8f9fa;
-  border-radius: 12px;
+  border-radius: 14px;
   transition: all 0.2s;
+  gap: 12px;
+  cursor: pointer;
 }
-.level-item.locked { opacity: 0.5; }
-.level-item.current { border: 2px solid #4A90E2; background: #e3f2fd; }
-.level-item:not(.locked):hover { transform: translateX(5px); background: #e8f5e9; cursor: pointer; }
+
+.level-item.locked { opacity: 0.5; cursor: not-allowed; }
+.level-item.current { border: 2px solid var(--primary); background: #e3f2fd; }
+.level-item:not(.locked):hover { transform: translateX(4px); background: #e8f5e9; }
+
 .level-num {
-  width: 42px; height: 42px;
-  background: #4A90E2;
+  width: 44px; height: 44px;
+  background: var(--primary);
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  margin-right: 15px;
+  font-weight: 700;
   flex-shrink: 0;
   font-size: 1.1rem;
+  box-shadow: 0 3px 8px rgba(74, 144, 226, 0.3);
 }
-.level-item.locked .level-num { background: #bdbdbd; }
-.level-info { flex: 1; }
-.level-title { font-weight: bold; color: #333; }
-.level-range { font-size: 0.8rem; color: #666; }
-.level-stars { font-size: 1.3rem; letter-spacing: 2px; }
+
+.level-item.locked .level-num { background: #bdbdbd; box-shadow: none; }
+.level-info { flex: 1; min-width: 0; }
+.level-title { font-weight: 700; color: var(--text); font-size: 0.95rem; }
+.level-range { font-size: 0.78rem; color: #666; margin-top: 2px; }
+.level-stars { font-size: 1.2rem; letter-spacing: 1px; flex-shrink: 0; }
+
 .modal-close {
   width: 100%;
   padding: 12px;
-  background: #4A90E2;
+  background: var(--primary);
   color: white;
   border: none;
-  border-radius: 12px;
-  margin-top: 10px;
+  border-radius: 14px;
+  margin-top: 12px;
   font-size: 1rem;
-  font-weight: bold;
+  font-weight: 700;
   cursor: pointer;
   transition: background 0.2s;
 }
-.modal-close:hover { background: #357ABD; }
+
+.modal-close:hover { background: var(--primary-dark); }
+
 .level-complete {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -296,145 +486,343 @@ footer {
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: 20000;
   padding: 20px;
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  animation: fadeIn 0.3s ease;
 }
+
 .level-complete.show { display: flex; }
+
 .complete-content {
   background: white;
-  border-radius: 20px;
-  padding: 30px;
+  border-radius: 24px;
+  padding: 32px 24px;
   text-align: center;
-  max-width: 350px;
+  max-width: 360px;
   width: 100%;
-  animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  animation: popIn 0.55s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  box-shadow: 0 30px 70px rgba(0,0,0,0.4);
 }
+
 @keyframes popIn {
   from { transform: scale(0.5); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
-.complete-title { font-size: 1.8rem; margin-bottom: 10px; color: #2c3e50; }
-.complete-stars { font-size: 2.8rem; margin: 15px 0; letter-spacing: 5px; }
-.complete-msg { font-size: 1.1rem; color: #666; margin-bottom: 20px; }
+
+.complete-title {
+  font-size: 1.9rem;
+  margin-bottom: 8px;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.complete-stars {
+  font-size: 3rem;
+  margin: 12px 0;
+  letter-spacing: 6px;
+  animation: starBounce 0.6s ease 0.3s both;
+}
+
+@keyframes starBounce {
+  0% { transform: scale(0) rotate(-30deg); opacity: 0; }
+  60% { transform: scale(1.2) rotate(10deg); }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+.complete-msg {
+  font-size: 1.1rem;
+  color: #555;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-around;
+  margin: 16px 0;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 14px;
+}
+
+.stat-item { text-align: center; }
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #666;
+  margin-top: 2px;
+}
+
 .complete-btn {
-  padding: 12px 30px;
-  background: #4CAF50;
+  padding: 14px 28px;
+  background: var(--success);
   color: white;
   border: none;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: bold;
+  border-radius: 14px;
+  font-size: 1.05rem;
+  font-weight: 700;
   cursor: pointer;
   margin: 5px;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  pointer-events: auto;
+  position: relative;
+  z-index: 20001;
 }
-.complete-btn:hover { background: #43A047; }
-.complete-btn.secondary { background: #FF9800; }
-.complete-btn.secondary:hover { background: #FB8C00; }
+
+.complete-btn:active { transform: scale(0.95); }
+.complete-btn.secondary {
+  background: var(--warning);
+  color: var(--text);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+.complete-btn.secondary:active { background: #FFB300; }
+
 .confetti {
   position: fixed;
-  width: 10px; height: 10px;
-  top: -10px;
+  width: 12px; height: 12px;
+  top: -12px;
   animation: fall linear forwards;
-  z-index: 3000;
-  border-radius: 2px;
+  z-index: 30000;
+  border-radius: 3px;
+  pointer-events: none;
 }
+
 @keyframes fall {
-  to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  to { transform: translateY(105vh) rotate(720deg); opacity: 0; }
 }
+
+.theme-selector {
+  display: flex;
+  gap: 6px;
+  background: var(--glass-bg);
+  padding: 4px;
+  border-radius: 20px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border);
+}
+
+.theme-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.theme-btn.active {
+  background: rgba(255,255,255,0.3);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.theme-btn:active { transform: scale(0.95); }
+
+.bubbles-container {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.bubble {
+  position: absolute;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  animation: rise linear forwards;
+}
+
+@keyframes rise {
+  0% { transform: translateY(100vh) scale(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+}
+
 @media (max-width: 360px) {
-  .equation { font-size: 2.2rem; }
-  .key { padding: 14px; font-size: 1.3rem; }
-  .dot { width: 26px; height: 26px; font-size: 0.7rem; }
+  .equation { font-size: 2.1rem; letter-spacing: 1px; }
+  .key { padding: 14px; font-size: 1.4rem; min-height: 50px; }
+  .dot { width: 28px; height: 28px; font-size: 0.7rem; }
+  .character { width: 32px; height: 32px; }
+  .character-ocean { width: 36px; height: 36px; }
+}
+
+@media (min-height: 800px) {
+  .scene-container { margin: 8px 0 10px; }
+  .card-container { margin: 8px 0 14px; }
 }
 </style>
 </head>
 <body>
   <header>
-    <button class="icon-btn" id="homeBtn" title="Restart Level">🏠</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="icon-btn" id="homeBtn" title="Restart Level">🏠</button>
+      <button class="icon-btn" id="levelsBtn" title="Peta Level">🗺️</button>
+    </div>
     <div style="text-align:center;flex:1;">
-      <div class="game-title">Addition Mountain</div>
+      <div class="game-title">Addition Adventure</div>
       <div class="level-name" id="levelName">Bukit Pemula</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center;">
       <div class="score-badge" id="scoreBadge">0/10</div>
-      <button class="icon-btn" id="levelsBtn" title="Level Map">🗺️</button>
+      <div class="theme-selector" id="themeSelector">
+        <button class="theme-btn active" data-theme="mountain">🏔️</button>
+        <button class="theme-btn" data-theme="ocean">🌊</button>
+      </div>
     </div>
   </header>
 
-  <div class="mountain-container" id="mountainContainer">
-    <svg class="mountain-svg" viewBox="0 0 400 500" preserveAspectRatio="xMidYMid meet">
+  <!-- Mountain Scene -->
+  <div class="scene-container" id="mountainScene">
+    <svg class="scene-svg" viewBox="0 0 400 500" preserveAspectRatio="xMidYMid meet">
       <defs>
         <linearGradient id="mountainGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" style="stop-color:#9E9E9E;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#607D8B;stop-opacity:1" />
+          <stop offset="0%" style="stop-color:#9E9E9E" />
+          <stop offset="100%" style="stop-color:#607D8B" />
         </linearGradient>
         <linearGradient id="snowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#E8E8E8;stop-opacity:1" />
+          <stop offset="0%" style="stop-color:#FFFFFF" />
+          <stop offset="100%" style="stop-color:#E8E8E8" />
         </linearGradient>
+        <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+          <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.2)"/>
+        </filter>
       </defs>
-      <!-- Background clouds -->
-      <ellipse cx="80" cy="60" rx="40" ry="15" fill="rgba(255,255,255,0.6)" />
-      <ellipse cx="320" cy="90" rx="35" ry="12" fill="rgba(255,255,255,0.5)" />
-      <!-- Mountain body -->
+      <ellipse cx="90" cy="55" rx="45" ry="14" fill="rgba(255,255,255,0.55)" />
+      <ellipse cx="310" cy="80" rx="38" ry="11" fill="rgba(255,255,255,0.45)" />
       <path d="M 0 500 L 200 80 L 400 500 Z" fill="url(#mountainGrad)" />
-      <!-- Snow cap -->
-      <path d="M 200 80 L 180 140 L 200 120 L 220 140 Z" fill="url(#snowGrad)" />
-      <!-- Ridge lines -->
-      <path d="M 200 80 L 160 180" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none" />
-      <path d="M 200 80 L 240 180" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none" />
-      <!-- Base camp -->
-      <rect x="155" y="465" width="90" height="35" fill="#5D4037" rx="4" />
-      <text x="200" y="487" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="sans-serif">BASE CAMP</text>
-      <!-- Trees -->
-      <polygon points="50,500 60,460 70,500" fill="#2E7D32" />
-      <polygon points="330,500 340,470 350,500" fill="#2E7D32" />
-      <polygon points="310,500 320,475 330,500" fill="#388E3C" />
-      <!-- Summit flag -->
-      <line x1="200" y1="80" x2="200" y2="55" stroke="#333" stroke-width="2" />
-      <polygon points="200,55 215,62 200,69" fill="#F44336" />
+      <path d="M 200 80 L 175 145 L 200 120 L 225 145 Z" fill="url(#snowGrad)" filter="url(#shadow)" />
+      <path d="M 200 80 L 155 190" stroke="rgba(255,255,255,0.35)" stroke-width="2.5" fill="none" />
+      <path d="M 200 80 L 245 190" stroke="rgba(255,255,255,0.35)" stroke-width="2.5" fill="none" />
+      <rect x="152" y="462" width="96" height="38" fill="#5D4037" rx="5" filter="url(#shadow)" />
+      <text x="200" y="486" text-anchor="middle" fill="white" font-size="12" font-weight="bold" font-family="sans-serif" letter-spacing="1">BASE CAMP</text>
+      <polygon points="45,500 58,455 71,500" fill="#2E7D32" />
+      <polygon points="325,500 338,465 351,500" fill="#388E3C" />
+      <line x1="200" y1="80" x2="200" y2="52" stroke="#333" stroke-width="2.5" />
+      <polygon points="200,52 218,60 200,68" fill="#F44336" filter="url(#shadow)" />
     </svg>
-    <div class="climber" id="climber" style="top: 88%;"></div>
+    <div class="character character-mountain" id="mountainCharacter">🧗</div>
   </div>
 
-  <div class="card-container">
-    <div class="flashcard" id="flashcard">
-      <div class="equation" id="equation">5 + 3 = ?</div>
-      <div class="answer-display" id="answerDisplay">?</div>
-      <div class="feedback" id="feedback"></div>
+  <!-- Ocean Scene -->
+  <div class="scene-container" id="oceanScene" style="display:none;">
+    <svg class="scene-svg" viewBox="0 0 400 500" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <linearGradient id="oceanGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#006064" />
+          <stop offset="50%" style="stop-color:#00838F" />
+          <stop offset="100%" style="stop-color:#00ACC1" />
+        </linearGradient>
+        <linearGradient id="sandGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#F4D03F" />
+          <stop offset="100%" style="stop-color:#D4AC0D" />
+        </linearGradient>
+        <filter id="oceanShadow">
+          <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.3)"/>
+        </filter>
+      </defs>
+      <!-- Ocean surface -->
+      <rect x="0" y="0" width="400" height="500" fill="url(#oceanGrad)" />
+      <!-- Light rays -->
+      <polygon points="80,0 120,500 60,500" fill="rgba(255,255,255,0.08)" />
+      <polygon points="280,0 320,500 260,500" fill="rgba(255,255,255,0.06)" />
+      <!-- Sand bottom -->
+      <path d="M 0 420 Q 100 400 200 420 T 400 420 L 400 500 L 0 500 Z" fill="url(#sandGrad)" />
+      <!-- Coral reef -->
+      <ellipse cx="80" cy="440" rx="30" ry="15" fill="#FF6B6B" />
+      <ellipse cx="320" cy="445" rx="25" ry="12" fill="#FF9800" />
+      <ellipse cx="180" cy="435" rx="20" ry="10" fill="#E91E63" />
+      <!-- Fish -->
+      <g transform="translate(60, 200)">
+        <ellipse cx="0" cy="0" rx="15" ry="8" fill="#FFD700" />
+        <polygon points="-15,0 -25,-6 -25,6" fill="#FFD700" />
+        <circle cx="8" cy="-2" r="2" fill="#333" />
+      </g>
+      <g transform="translate(320, 280)">
+        <ellipse cx="0" cy="0" rx="12" ry="6" fill="#4CAF50" />
+        <polygon points="-12,0 -20,-5 -20,5" fill="#4CAF50" />
+        <circle cx="6" cy="-1.5" r="1.5" fill="#333" />
+      </g>
+      <g transform="translate(150, 350)">
+        <ellipse cx="0" cy="0" rx="10" ry="5" fill="#2196F3" />
+        <polygon points="-10,0 -16,-4 -16,4" fill="#2196F3" />
+        <circle cx="5" cy="-1" r="1.5" fill="#333" />
+      </g>
+      <!-- Seaweed -->
+      <path d="M 250 420 Q 255 380 250 340 Q 245 380 250 420" fill="#4CAF50" opacity="0.7" />
+      <path d="M 260 420 Q 265 390 260 360 Q 255 390 260 420" fill="#388E3C" opacity="0.7" />
+      <!-- Submarine -->
+      <g transform="translate(200, 160)" filter="url(#oceanShadow)">
+        <ellipse cx="0" cy="0" rx="40" ry="18" fill="#F44336" />
+        <ellipse cx="0" cy="0" rx="35" ry="14" fill="#D32F2F" />
+        <circle cx="-10" cy="-5" r="12" fill="rgba(255,255,255,0.3)" stroke="#fff" stroke-width="2" />
+        <rect x="20" y="-3" width="12" height="6" fill="#333" rx="2" />
+        <line x1="-25" y1="0" x2="-50" y2="-20" stroke="#FFC107" stroke-width="3" />
+      </g>
+      <!-- Bubbles -->
+      <circle cx="180" cy="200" r="5" fill="rgba(255,255,255,0.4)" />
+      <circle cx="220" cy="180" r="3" fill="rgba(255,255,255,0.3)" />
+      <circle cx="190" cy="150" r="4" fill="rgba(255,255,255,0.35)" />
+    </svg>
+    <div class="character character-ocean" id="oceanCharacter" style="bottom: 20%; left: 50%;">🤿</div>
+  </div>
+
+  <!-- Bubbles container for ocean theme -->
+  <div class="bubbles-container" id="bubblesContainer"></div>
+
+  <div class="main-area">
+    <div class="card-container">
+      <div class="flashcard" id="flashcard">
+        <div class="equation" id="equation">5 + 3 = ?</div>
+        <div class="answer-display" id="answerDisplay">?</div>
+        <div class="feedback" id="feedback"></div>
+      </div>
+    </div>
+
+    <div class="progress-container">
+      <div class="progress-label" id="progressLabel">Progress: 0 / 10</div>
+      <div class="progress-dots" id="progressDots"></div>
+    </div>
+
+    <div class="keypad">
+      <button class="key" data-num="1">1</button>
+      <button class="key" data-num="2">2</button>
+      <button class="key" data-num="3">3</button>
+      <button class="key" data-num="4">4</button>
+      <button class="key" data-num="5">5</button>
+      <button class="key" data-num="6">6</button>
+      <button class="key" data-num="7">7</button>
+      <button class="key" data-num="8">8</button>
+      <button class="key" data-num="9">9</button>
+      <button class="key backspace" id="backspaceBtn">⌫</button>
+      <button class="key" data-num="0">0</button>
+      <button class="key submit" id="submitBtn">✓</button>
     </div>
   </div>
 
-  <div class="progress-container">
-    <div class="progress-label" id="progressLabel">Progress: 0 / 10</div>
-    <div class="progress-dots" id="progressDots"></div>
-  </div>
-
-  <div class="keypad">
-    <button class="key" data-num="1">1</button>
-    <button class="key" data-num="2">2</button>
-    <button class="key" data-num="3">3</button>
-    <button class="key" data-num="4">4</button>
-    <button class="key" data-num="5">5</button>
-    <button class="key" data-num="6">6</button>
-    <button class="key" data-num="7">7</button>
-    <button class="key" data-num="8">8</button>
-    <button class="key" data-num="9">9</button>
-    <button class="key backspace" id="backspaceBtn">⌫</button>
-    <button class="key" data-num="0">0</button>
-    <button class="key submit" id="submitBtn">✓</button>
-  </div>
-
   <footer>
-    <button class="footer-btn" id="resetBtn">🔄 Reset Progress</button>
+    <button class="footer-btn" id="resetBtn">🔄 Reset</button>
+    <button class="footer-btn" id="statsBtn">📊 Statistik</button>
   </footer>
 
   <!-- Level Map Modal -->
   <div class="modal-overlay" id="levelsModal">
     <div class="modal">
-      <h2>🗺️ Peta Gunung</h2>
+      <h2>🗺️ Peta Petualangan</h2>
       <div id="levelsList"></div>
       <button class="modal-close" id="closeModal">Tutup</button>
     </div>
@@ -443,9 +831,10 @@ footer {
   <!-- Level Complete Modal -->
   <div class="level-complete" id="levelComplete">
     <div class="complete-content">
-      <div class="complete-title" id="completeTitle">Level Complete!</div>
+      <div class="complete-title" id="completeTitle">Level Complete! 🎉</div>
       <div class="complete-stars" id="completeStars">⭐⭐⭐</div>
       <div class="complete-msg" id="completeMsg">Amazing!</div>
+      <div class="stat-row" id="levelStats"></div>
       <div>
         <button class="complete-btn" id="nextLevelBtn">Next Level →</button>
         <button class="complete-btn secondary" id="replayBtn">🔄 Replay</button>
@@ -453,36 +842,67 @@ footer {
     </div>
   </div>
 
+  <!-- Stats Modal -->
+  <div class="modal-overlay" id="statsModal">
+    <div class="modal">
+      <h2>📊 Statistik</h2>
+      <div id="statsContent"></div>
+      <button class="modal-close" id="closeStats">Tutup</button>
+    </div>
+  </div>
+
 <script>
-const LEVELS = [
-  { name: 'Bukit Pemula', range: [0, 5], desc: '0+0 sampai 5+5' },
-  { name: 'Tanah Tinggi', range: [0, 9], desc: '0+0 sampai 9+9' },
-  { name: 'Puncak Sepuluh', range: [10, 10], desc: '10+0 sampai 10+10', fixed: true },
-  { name: 'Bukit Menengah', range: [0, 20], desc: '0+0 sampai 20+20' },
-  { name: 'Lereng Lima Puluh', range: [10, 50], desc: '10+10 sampai 50+50' },
-  { name: 'Bukit Seratus', range: [0, 50], desc: '0+0 sampai 50+50' },
-  { name: 'Pegunungan Dua Ratus', range: [0, 100], desc: '0+0 sampai 100+100' },
-  { name: 'Puncak Lima Ratus', range: [100, 500], desc: '100+100 sampai 500+500' },
-  { name: 'Bukit Seribu', range: [0, 500], desc: '0+0 sampai 500+500' },
-  { name: 'Puncak Seribu', range: [0, 1000], desc: '0+0 sampai 1000+1000' },
-  { name: 'Tangga Sepuluh', range: [10, 90], desc: 'Kelipatan 10', multiple: 10 },
-  { name: 'Tangga Seratus', range: [100, 900], desc: 'Kelipatan 100', multiple: 100 },
-  { name: 'Tangga Seribu', range: [1000, 9000], desc: 'Kelipatan 1000', multiple: 1000 },
-  { name: 'Puncak Bulat', range: [300, 800], desc: 'Ratusan mendekati bulat', nearRound: true },
-  { name: 'Maha Puncak', range: [0, 1000], desc: 'Tantangan campuran 0-2000' }
+const THEMES = {
+  mountain: {
+    name: '🏔️ Gunung',
+    sceneId: 'mountainScene',
+    characterClass: 'character-mountain',
+    characterEmoji: '🧗',
+    levels: [
+      { name: 'Bukit Pemula', range: [0, 5], desc: '0+0 sampai 5+5' },
+      { name: 'Tanah Tinggi', range: [0, 9], desc: '0+0 sampai 9+9' },
+      { name: 'Puncak Sepuluh', range: [10, 10], desc: 'Fokus penjumlahan 10', fixed: true },
+      { name: 'Bukit Menengah', range: [0, 20], desc: '0+0 sampai 20+20' },
+      { name: 'Lereng Lima Puluh', range: [10, 50], desc: '10+10 sampai 50+50' }
+    ]
+  },
+  ocean: {
+    name: '🌊 Laut',
+    sceneId: 'oceanScene',
+    characterClass: 'character-ocean',
+    characterEmoji: '🤿',
+    levels: [
+      { name: 'Pantai Biru', range: [0, 5], desc: '0+0 sampai 5+5' },
+      { name: 'Terumbu Karang', range: [0, 9], desc: '0+0 sampai 9+9' },
+      { name: 'Gelap Laut', range: [10, 10], desc: 'Fokus penjumlahan 10', fixed: true },
+      { name: 'Samudra Menengah', range: [0, 20], desc: '0+0 sampai 20+20' },
+      { name: 'Laut Lima Puluh', range: [10, 50], desc: '10+10 sampai 50+50' }
+    ]
+  }
+};
+
+const ALL_LEVELS = [
+  ...THEMES.mountain.levels.map((l, i) => ({ ...l, theme: 'mountain', themeIndex: i })),
+  ...THEMES.ocean.levels.map((l, i) => ({ ...l, theme: 'ocean', themeIndex: i }))
 ];
 
 const QUESTIONS_PER_LEVEL = 10;
-const STORAGE_KEY = 'additionMountainData';
+const STORAGE_KEY = 'additionAdventureDataV3';
 
 let state = {
-  currentLevel: 1,
+  currentLevel: 0,
   currentScore: 0,
   currentWrongs: 0,
   levelStars: {},
   currentAnswer: null,
   userAnswer: '',
-  busy: false
+  busy: false,
+  totalPlayed: 0,
+  totalCorrect: 0,
+  totalWrong: 0,
+  bestStreak: 0,
+  currentStreak: 0,
+  currentTheme: 'mountain'
 };
 
 function loadState() {
@@ -490,12 +910,17 @@ function loadState() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const data = JSON.parse(saved);
-      state.currentLevel = data.currentLevel || 1;
+      state.currentLevel = Math.max(0, Math.min(data.currentLevel || 0, ALL_LEVELS.length - 1));
       state.levelStars = data.levelStars || {};
       state.currentScore = data.currentScore || 0;
       state.currentWrongs = data.currentWrongs || 0;
+      state.totalPlayed = data.totalPlayed || 0;
+      state.totalCorrect = data.totalCorrect || 0;
+      state.totalWrong = data.totalWrong || 0;
+      state.bestStreak = data.bestStreak || 0;
+      state.currentTheme = data.currentTheme || 'mountain';
       if (state.currentScore >= QUESTIONS_PER_LEVEL) {
-        state.currentLevel = Math.min(state.currentLevel + 1, LEVELS.length);
+        state.currentLevel = Math.min(state.currentLevel + 1, ALL_LEVELS.length - 1);
         state.currentScore = 0;
         state.currentWrongs = 0;
       }
@@ -509,41 +934,79 @@ function saveState() {
       currentLevel: state.currentLevel,
       levelStars: state.levelStars,
       currentScore: state.currentScore,
-      currentWrongs: state.currentWrongs
+      currentWrongs: state.currentWrongs,
+      totalPlayed: state.totalPlayed,
+      totalCorrect: state.totalCorrect,
+      totalWrong: state.totalWrong,
+      bestStreak: state.bestStreak,
+      currentTheme: state.currentTheme
     }));
   } catch (e) { console.error('Save failed', e); }
 }
 
 function generateQuestion(levelIndex) {
-  const level = LEVELS[levelIndex];
+  const level = ALL_LEVELS[levelIndex];
   let a, b;
-  
+
   if (level.fixed) {
     b = Math.floor(Math.random() * 11);
     a = 10;
-  } else if (level.multiple) {
-    const minVal = Math.floor(level.range[0] / level.multiple);
-    const maxVal = Math.floor(level.range[1] / level.multiple);
-    a = (Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal) * level.multiple;
-    b = (Math.floor(Math.random() * (maxVal - minVal + 1)) + minVal) * level.multiple;
-  } else if (level.nearRound) {
-    const bases = [300, 400, 500, 600, 700, 800];
-    const comps = [100, 200, 300, 400, 500, 600, 700];
-    a = bases[Math.floor(Math.random() * bases.length)];
-    b = comps[Math.floor(Math.random() * comps.length)];
   } else {
     a = Math.floor(Math.random() * (level.range[1] - level.range[0] + 1)) + level.range[0];
     b = Math.floor(Math.random() * (level.range[1] - level.range[0] + 1)) + level.range[0];
   }
-  
+
   return { a, b, answer: a + b };
 }
 
+function setTheme(themeName) {
+  const prev = state.currentTheme;
+  state.currentTheme = themeName;
+  document.body.classList.remove('theme-' + prev);
+  document.body.classList.add('theme-' + themeName);
+
+  document.getElementById('mountainScene').style.display = themeName === 'mountain' ? 'block' : 'none';
+  document.getElementById('oceanScene').style.display = themeName === 'ocean' ? 'block' : 'none';
+
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === themeName);
+  });
+
+  if (themeName === 'ocean') {
+    startBubbles();
+  } else {
+    stopBubbles();
+  }
+
+  saveState();
+}
+
+function updateCharacter() {
+  const level = ALL_LEVELS[state.currentLevel];
+  const theme = level ? level.theme : state.currentTheme;
+  if (theme !== state.currentTheme) {
+    setTheme(theme);
+  }
+
+  const scene = document.getElementById(THEMES[theme].sceneId);
+  const character = document.getElementById(THEMES[theme].sceneId.replace('Scene', 'Character'));
+  if (character) {
+    character.textContent = THEMES[theme].characterEmoji;
+  }
+}
+
 function updateUI() {
-  const level = LEVELS[state.currentLevel - 1];
-  document.getElementById('levelName').textContent = state.currentLevel + '. ' + level.name;
+  const level = ALL_LEVELS[state.currentLevel];
+  if (!level) return;
+
+  const theme = level.theme;
+  if (theme !== state.currentTheme) {
+    setTheme(theme);
+  }
+
+  document.getElementById('levelName').textContent = (state.currentLevel + 1) + '. ' + level.name;
   document.getElementById('scoreBadge').textContent = state.currentScore + '/' + QUESTIONS_PER_LEVEL;
-  
+
   const dotsContainer = document.getElementById('progressDots');
   dotsContainer.innerHTML = '';
   for (let i = 0; i < QUESTIONS_PER_LEVEL; i++) {
@@ -554,31 +1017,28 @@ function updateUI() {
     dot.textContent = i < state.currentScore ? '✓' : (i + 1);
     dotsContainer.appendChild(dot);
   }
-  
+
   document.getElementById('progressLabel').textContent = 'Progress: ' + state.currentScore + ' / ' + QUESTIONS_PER_LEVEL;
-  
-  const progress = state.currentScore / QUESTIONS_PER_LEVEL;
-  const topPos = 88 - (progress * 76);
-  document.getElementById('climber').style.top = topPos + '%';
-  
+
+  updateCharacter();
   updateFlashcard();
 }
 
 function updateFlashcard() {
-  const q = generateQuestion(state.currentLevel - 1);
+  const q = generateQuestion(state.currentLevel);
   state.currentAnswer = q.answer;
   state.userAnswer = '';
   state.busy = false;
   document.getElementById('equation').textContent = q.a + ' + ' + q.b + ' = ?';
   document.getElementById('answerDisplay').textContent = '?';
-  document.getElementById('answerDisplay').style.color = '#4A90E2';
+  document.getElementById('answerDisplay').style.color = 'var(--primary)';
 }
 
 function showFeedback(type, message) {
   const feedback = document.getElementById('feedback');
   feedback.textContent = message;
   feedback.className = 'feedback show ' + type;
-  setTimeout(() => { feedback.className = 'feedback'; }, 1000);
+  setTimeout(() => { feedback.className = 'feedback'; }, 1100);
 }
 
 function calculateStars(wrongs) {
@@ -591,18 +1051,80 @@ function renderStars(stars) {
   return '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
 }
 
+function createConfetti() {
+  const colors = ['#FFD700', '#FF6B6B', '#4CAF50', '#2196F3', '#9C27B0', '#FF9800', '#00BCD4'];
+  for (let i = 0; i < 50; i++) {
+    setTimeout(() => {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = Math.random() * 100 + 'vw';
+      c.style.background = colors[Math.floor(Math.random() * colors.length)];
+      c.style.width = (Math.random() * 8 + 6) + 'px';
+      c.style.height = (Math.random() * 8 + 6) + 'px';
+      c.style.animationDuration = (Math.random() * 2 + 2.5) + 's';
+      c.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 5000);
+    }, i * 35);
+  }
+}
+
+let bubbleInterval;
+
+function startBubbles() {
+  stopBubbles();
+  bubbleInterval = setInterval(() => {
+    const container = document.getElementById('bubblesContainer');
+    if (!container || state.currentTheme !== 'ocean') return;
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    const size = Math.random() * 20 + 5;
+    bubble.style.width = size + 'px';
+    bubble.style.height = size + 'px';
+    bubble.style.left = Math.random() * 100 + '%';
+    bubble.style.animationDuration = (Math.random() * 4 + 6) + 's';
+    container.appendChild(bubble);
+    setTimeout(() => bubble.remove(), 10000);
+  }, 400);
+}
+
+function stopBubbles() {
+  if (bubbleInterval) {
+    clearInterval(bubbleInterval);
+    bubbleInterval = null;
+  }
+  const container = document.getElementById('bubblesContainer');
+  if (container) container.innerHTML = '';
+}
+
 function levelComplete() {
   const stars = calculateStars(state.currentWrongs);
   state.levelStars[state.currentLevel] = Math.max(stars, state.levelStars[state.currentLevel] || 0);
   saveState();
-  
-  const isLast = state.currentLevel >= LEVELS.length;
-  document.getElementById('completeTitle').textContent = isLast ? '🏆 Maha Puncak!' : 'Level Complete! 🎉';
+
+  const isLast = state.currentLevel >= ALL_LEVELS.length - 1;
+  document.getElementById('completeTitle').textContent = isLast ? '🏆 Petualangan Selesai!' : 'Level Complete! 🎉';
   document.getElementById('completeStars').textContent = renderStars(stars);
-  
-  const messages = ['Perfect! No mistakes! 🎊', 'Great job! 🌟', 'Good effort! Keep climbing! 💪'];
+
+  const messages = ['Perfect! No mistakes! 🎊', 'Great job! 🌟', 'Good effort! Keep exploring! 💪'];
   document.getElementById('completeMsg').textContent = messages[3 - stars];
-  
+
+  const levelStats = document.getElementById('levelStats');
+  levelStats.innerHTML = `
+    <div class="stat-item">
+      <div class="stat-value">${QUESTIONS_PER_LEVEL - state.currentWrongs}/${QUESTIONS_PER_LEVEL}</div>
+      <div class="stat-label">Benar</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">${state.currentWrongs}</div>
+      <div class="stat-label">Salah</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">${stars}⭐</div>
+      <div class="stat-label">Bintang</div>
+    </div>
+  `;
+
   document.getElementById('nextLevelBtn').textContent = isLast ? '🔄 Main Lagi' : 'Next Level →';
   document.getElementById('levelComplete').classList.add('show');
   createConfetti();
@@ -610,14 +1132,15 @@ function levelComplete() {
 
 function nextLevel() {
   document.getElementById('levelComplete').classList.remove('show');
-  if (state.currentLevel >= LEVELS.length) {
-    state.currentLevel = 1;
+  if (state.currentLevel >= ALL_LEVELS.length - 1) {
+    state.currentLevel = 0;
   } else {
     state.currentLevel++;
   }
   state.currentScore = 0;
   state.currentWrongs = 0;
   state.userAnswer = '';
+  state.currentStreak = 0;
   saveState();
   updateUI();
 }
@@ -627,33 +1150,20 @@ function replayLevel() {
   state.currentScore = 0;
   state.currentWrongs = 0;
   state.userAnswer = '';
+  state.currentStreak = 0;
   saveState();
   updateUI();
-}
-
-function createConfetti() {
-  const colors = ['#FFD700', '#FF6B6B', '#4CAF50', '#2196F3', '#9C27B0', '#FF9800'];
-  for (let i = 0; i < 40; i++) {
-    setTimeout(() => {
-      const c = document.createElement('div');
-      c.className = 'confetti';
-      c.style.left = Math.random() * 100 + 'vw';
-      c.style.background = colors[Math.floor(Math.random() * colors.length)];
-      c.style.width = (Math.random() * 8 + 6) + 'px';
-      c.style.height = (Math.random() * 8 + 6) + 'px';
-      c.style.animationDuration = (Math.random() * 2 + 2.5) + 's';
-      c.style.animationDelay = '0s';
-      document.body.appendChild(c);
-      setTimeout(() => c.remove(), 5000);
-    }, i * 40);
-  }
 }
 
 function handleNumber(num) {
   if (state.busy) return;
   if (state.userAnswer.length >= 6) return;
   state.userAnswer += num;
-  document.getElementById('answerDisplay').textContent = state.userAnswer;
+  const display = document.getElementById('answerDisplay');
+  display.textContent = state.userAnswer;
+  display.classList.remove('pulse');
+  void display.offsetWidth;
+  display.classList.add('pulse');
 }
 
 function handleBackspace() {
@@ -664,17 +1174,21 @@ function handleBackspace() {
 
 function handleSubmit() {
   if (state.busy || !state.userAnswer) return;
-  
+
   const userVal = parseInt(state.userAnswer, 10);
   state.busy = true;
+  state.totalPlayed++;
   const flashcard = document.getElementById('flashcard');
-  
+
   if (userVal === state.currentAnswer) {
     flashcard.classList.add('correct');
     showFeedback('correct', '✓ Benar!');
     state.currentScore++;
+    state.totalCorrect++;
+    state.currentStreak++;
+    if (state.currentStreak > state.bestStreak) state.bestStreak = state.currentStreak;
     saveState();
-    
+
     setTimeout(() => {
       flashcard.classList.remove('correct');
       if (state.currentScore >= QUESTIONS_PER_LEVEL) {
@@ -687,101 +1201,251 @@ function handleSubmit() {
     flashcard.classList.add('wrong');
     showFeedback('wrong', '✗ ' + state.currentAnswer);
     state.currentWrongs++;
+    state.totalWrong++;
+    state.currentStreak = 0;
     saveState();
-    
+
     setTimeout(() => {
       flashcard.classList.remove('wrong');
       state.userAnswer = '';
       document.getElementById('answerDisplay').textContent = '?';
-      document.getElementById('answerDisplay').style.color = '#4A90E2';
+      document.getElementById('answerDisplay').style.color = 'var(--primary)';
       updateFlashcard();
     }, 1200);
   }
 }
 
 function resetProgress() {
-  if (confirm('Reset all progress? This cannot be undone.')) {
+  if (confirm('Reset semua progress? Ini tidak bisa dibatalkan.')) {
     localStorage.removeItem(STORAGE_KEY);
-    state.currentLevel = 1;
+    state.currentLevel = 0;
     state.currentScore = 0;
     state.currentWrongs = 0;
     state.levelStars = {};
     state.userAnswer = '';
     state.busy = false;
+    state.totalPlayed = 0;
+    state.totalCorrect = 0;
+    state.totalWrong = 0;
+    state.bestStreak = 0;
+    state.currentStreak = 0;
     updateUI();
   }
+}
+
+function showStats() {
+  const modal = document.getElementById('statsModal');
+  const content = document.getElementById('statsContent');
+  const accuracy = state.totalPlayed > 0 ? Math.round((state.totalCorrect / state.totalPlayed) * 100) : 0;
+  const totalStars = Object.values(state.levelStars).reduce((a, b) => a + b, 0);
+  const maxStars = ALL_LEVELS.length * 3;
+
+  content.innerHTML = `
+    <div class="stat-row">
+      <div class="stat-item">
+        <div class="stat-value">${state.totalPlayed}</div>
+        <div class="stat-label">Total Main</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">${accuracy}%</div>
+        <div class="stat-label">Akurasi</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">${state.bestStreak}</div>
+        <div class="stat-label">Best Streak</div>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-item">
+        <div class="stat-value">${totalStars}/${maxStars}</div>
+        <div class="stat-label">Bintang</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">${state.currentLevel + 1}/${ALL_LEVELS.length}</div>
+        <div class="stat-label">Level</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">${state.totalCorrect}</div>
+        <div class="stat-label">Total Benar</div>
+      </div>
+    </div>
+  `;
+
+  modal.classList.add('show');
 }
 
 function showLevelsModal() {
   const modal = document.getElementById('levelsModal');
   const list = document.getElementById('levelsList');
   list.innerHTML = '';
-  
-  LEVELS.forEach((level, index) => {
-    const levelNum = index + 1;
-    const isUnlocked = levelNum <= state.currentLevel || state.levelStars[levelNum];
-    const isCurrent = levelNum === state.currentLevel;
-    const stars = state.levelStars[levelNum] || 0;
-    
-    const item = document.createElement('div');
-    item.className = 'level-item';
-    if (!isUnlocked) item.classList.add('locked');
-    if (isCurrent) item.classList.add('current');
-    
-    item.innerHTML = `
-      <div class="level-num">${levelNum}</div>
-      <div class="level-info">
-        <div class="level-title">${level.name}</div>
-        <div class="level-range">${level.desc}</div>
-      </div>
-      <div class="level-stars">${isUnlocked ? renderStars(stars) : '🔒'}</div>
-    `;
-    
-    if (isUnlocked) {
-      item.addEventListener('click', () => {
-        state.currentLevel = levelNum;
-        state.currentScore = 0;
-        state.currentWrongs = 0;
-        state.userAnswer = '';
-        state.busy = false;
-        saveState();
-        updateUI();
-        modal.classList.remove('show');
-      });
-    }
-    
-    list.appendChild(item);
+
+  const grouped = {};
+  ALL_LEVELS.forEach((level, index) => {
+    if (!grouped[level.theme]) grouped[level.theme] = [];
+    grouped[level.theme].push({ ...level, index });
   });
-  
+
+  Object.keys(THEMES).forEach(themeKey => {
+    const theme = THEMES[themeKey];
+    const levels = grouped[themeKey] || [];
+
+    const themeHeader = document.createElement('div');
+    themeHeader.style.cssText = 'padding: 8px 12px; font-weight: 700; color: var(--primary); font-size: 0.9rem; margin-top: 8px;';
+    themeHeader.textContent = theme.name;
+    list.appendChild(themeHeader);
+
+    levels.forEach(level => {
+      const levelNum = level.index + 1;
+      const isUnlocked = levelNum <= state.currentLevel + 1 || state.levelStars[levelNum];
+      const isCurrent = levelNum === state.currentLevel + 1;
+      const stars = state.levelStars[levelNum] || 0;
+
+      const item = document.createElement('div');
+      item.className = 'level-item';
+      if (!isUnlocked) item.classList.add('locked');
+      if (isCurrent) item.classList.add('current');
+
+      item.innerHTML = `
+        <div class="level-num">${levelNum}</div>
+        <div class="level-info">
+          <div class="level-title">${level.name}</div>
+          <div class="level-range">${level.desc}</div>
+        </div>
+        <div class="level-stars">${isUnlocked ? renderStars(stars) : '🔒'}</div>
+      `;
+
+      if (isUnlocked) {
+        item.addEventListener('click', () => {
+          state.currentLevel = level.index;
+          state.currentScore = 0;
+          state.currentWrongs = 0;
+          state.userAnswer = '';
+          state.busy = false;
+          state.currentStreak = 0;
+          saveState();
+          updateUI();
+          modal.classList.remove('show');
+        });
+      }
+
+      list.appendChild(item);
+    });
+  });
+
   modal.classList.add('show');
 }
 
 // Event Listeners
 document.querySelectorAll('.key[data-num]').forEach(btn => {
   btn.addEventListener('click', () => handleNumber(btn.dataset.num));
+  btn.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    handleNumber(btn.dataset.num);
+  });
 });
 document.getElementById('backspaceBtn').addEventListener('click', handleBackspace);
+document.getElementById('backspaceBtn').addEventListener('touchend', (e) => {
+  e.preventDefault();
+  handleBackspace();
+});
 document.getElementById('submitBtn').addEventListener('click', handleSubmit);
+document.getElementById('submitBtn').addEventListener('touchend', (e) => {
+  e.preventDefault();
+  handleSubmit();
+});
 document.getElementById('resetBtn').addEventListener('click', resetProgress);
+document.getElementById('resetBtn').addEventListener('touchend', (e) => {
+  e.preventDefault();
+  resetProgress();
+});
+document.getElementById('statsBtn').addEventListener('click', showStats);
+document.getElementById('statsBtn').addEventListener('touchend', (e) => {
+  e.preventDefault();
+  showStats();
+});
 document.getElementById('levelsBtn').addEventListener('click', showLevelsModal);
-document.getElementById('closeModal').addEventListener('click', () => {
-  document.getElementById('levelsModal').classList.remove('show');
+document.getElementById('levelsBtn').addEventListener('touchend', (e) => {
+  e.preventDefault();
+  showLevelsModal();
 });
 document.getElementById('homeBtn').addEventListener('click', () => {
   state.currentScore = 0;
   state.currentWrongs = 0;
   state.userAnswer = '';
   state.busy = false;
+  state.currentStreak = 0;
   saveState();
   updateUI();
   document.getElementById('levelsModal').classList.remove('show');
 });
+document.getElementById('homeBtn').addEventListener('touchend', (e) => {
+  e.preventDefault();
+  state.currentScore = 0;
+  state.currentWrongs = 0;
+  state.userAnswer = '';
+  state.busy = false;
+  state.currentStreak = 0;
+  saveState();
+  updateUI();
+  document.getElementById('levelsModal').classList.remove('show');
+});
+
+document.querySelectorAll('.theme-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const theme = btn.dataset.theme;
+    if (theme !== state.currentTheme) {
+      setTheme(theme);
+    }
+  });
+  btn.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    const theme = btn.dataset.theme;
+    if (theme !== state.currentTheme) {
+      setTheme(theme);
+    }
+  });
+});
+
+document.getElementById('closeModal').addEventListener('click', () => {
+  document.getElementById('levelsModal').classList.remove('show');
+});
+document.getElementById('closeModal').addEventListener('touchend', (e) => {
+  e.preventDefault();
+  document.getElementById('levelsModal').classList.remove('show');
+});
+document.getElementById('closeStats').addEventListener('click', () => {
+  document.getElementById('statsModal').classList.remove('show');
+});
+document.getElementById('closeStats').addEventListener('touchend', (e) => {
+  e.preventDefault();
+  document.getElementById('statsModal').classList.remove('show');
+});
 document.getElementById('nextLevelBtn').addEventListener('click', nextLevel);
+document.getElementById('nextLevelBtn').addEventListener('touchend', (e) => {
+  e.preventDefault();
+  nextLevel();
+});
 document.getElementById('replayBtn').addEventListener('click', replayLevel);
+document.getElementById('replayBtn').addEventListener('touchend', (e) => {
+  e.preventDefault();
+  replayLevel();
+});
 
 document.getElementById('levelsModal').addEventListener('click', (e) => {
   if (e.target === document.getElementById('levelsModal')) {
     document.getElementById('levelsModal').classList.remove('show');
+  }
+});
+
+document.getElementById('statsModal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('statsModal')) {
+    document.getElementById('statsModal').classList.remove('show');
+  }
+});
+
+document.getElementById('levelComplete').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('levelComplete')) {
+    document.getElementById('levelComplete').classList.remove('show');
   }
 });
 
@@ -792,6 +1456,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 loadState();
+setTheme(state.currentTheme);
 updateUI();
 </script>
 </body>
