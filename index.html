@@ -1296,9 +1296,9 @@ function showLevelsModal() {
 
     levels.forEach(level => {
       const levelNum = level.index + 1;
-      const isUnlocked = levelNum <= state.currentLevel + 1 || state.levelStars[levelNum];
-      const isCurrent = levelNum === state.currentLevel + 1;
-      const stars = state.levelStars[levelNum] || 0;
+      const isUnlocked = level.index <= state.currentLevel || state.levelStars[level.index];
+      const isCurrent = level.index === state.currentLevel;
+      const stars = state.levelStars[level.index] || 0;
 
       const item = document.createElement('div');
       item.className = 'level-item';
